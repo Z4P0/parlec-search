@@ -27,6 +27,7 @@
 
 
         settings: {
+
             product_families: {
                 'Toolholding': {
                     json_url: '/data/parlec-toolholding.json'
@@ -98,24 +99,76 @@
 
         add_event_listeners: function () {
 
+            var self = this;
 
             // a) select boxes
             $('#product-solution').on('change', function (event) {
                 var $selected_option = $(event.target).find('option:selected');
-                console.log($selected_option.data('index'));
+
+                // "activate" the next box
+                $('#system').attr('disabled', false);
+
+                // load up that data point
+                var data_point = parlec.DATA[self.name].products[$selected_option.data('index')].products;
+                var systems = [];
+                for (var i = 0; i < data_point.length; i++) {
+                    if (systems.length) {
+                        var already_exists = false;
+                        for (var j = 0; j < systems.length; j++) {
+                            if (systems[j].name === data_point[i]['SYSTEM']) {
+                                already_exists = true;
+                            }
+                        }
+                        if (!already_exists) {
+                            systems.push({
+                                name: data_point[i]['SYSTEM']
+                            });
+                        }
+                    } else {
+                        systems.push({
+                            name: data_point[i]['SYSTEM']
+                        });
+                    }
+                }
+
+                console.log('looped through data. these are the systems available:');
+                console.log(systems);
+
+                // render the options
+                parlec.utils.render_template({
+                    target: '#system',
+                    template: '#option-tpl',
+                    context: {
+                        options: systems
+                    }
+                });
+
             });
+
+
+
             $('#system').on('change', function (event) {
                 var $selected_option = $(event.target).find('option:selected');
                 console.log($selected_option.data('index'));
+                $('#taper-type').attr('disabled', false);
             });
+
+
+
             $('#taper-type').on('change', function (event) {
                 var $selected_option = $(event.target).find('option:selected');
                 console.log($selected_option.data('index'));
             });
+
+
+
+
             $('#part-number-select').on('change', function (event) {
                 var $selected_option = $(event.target).find('option:selected');
                 console.log($selected_option.data('index'));
             });
+
+
 
 
 
