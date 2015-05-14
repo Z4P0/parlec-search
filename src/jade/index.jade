@@ -1,0 +1,149 @@
+doctype html
+html(lang="en").no-js
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge,chrome=1")
+    title Parlec Parts Resources
+    meta(name="description", content="Parlec Parts Resources")
+    include _head.jade
+
+  body#parts-search
+    a(href="#main").visuallyhidden Skip to main content
+      header.header
+        .row
+          .columns.small-5
+            h1.h1
+              a(href="/") Parlec Parts Resources
+          .columns.small-7
+            button#login-btn.login-btn.right Login
+      main#main.main
+        //- .row
+        div
+          .left-sidebar.columns.medium-3.padding
+            .row
+              .columns
+                p
+                  strong Find Your Part
+                ul#filters-list.filters-list
+                  li
+                    label
+                      strong Product Solution
+                      select#product-solution(name="product-solution", placeholder="test", disabled)
+                        option(value="", disabled, selected) Select your option
+                  li
+                    label
+                      strong System
+                      select#system(name="system", disabled)
+                        option(value="", disabled, selected) Select your option
+                        option(value="1") one
+                        option(value="2") two
+                        option(value="3") three
+                  li
+                    label
+                      strong Taper Type
+                      select#taper-type(name="taper-type", disabled)
+                        option(value="", disabled, selected) Select your option
+                        option(value="1") one
+                        option(value="2") two
+                        option(value="3") three
+                  li
+                    label
+                      strong Part Number
+                      select#part-number-select(name="part-number", disabled)
+                        option(value="", disabled, selected) Select your option
+                        option(value="1") one
+                        option(value="2") two
+                        option(value="3") three
+                button.tiny.radius.right Search
+            hr
+            .row
+              .columns
+                p
+                  strong Know your Part #?
+                input#part-number(type="text", placeholder="Example: H100-16ERP406", disabled)
+                button.tiny.radius.right Search
+            footer.footer
+              p Copyright 2015 &copy; Parlec Inc.
+
+          .right-side-content.columns.medium-9.off-white-bg.padding
+            .row
+              .columns.small-centered.small-10.medium-6
+                h2 Find the templates and files you need.
+                p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo deleniti adipisci optio esse repellendus ut quibusdam impedit nam amet sapiente quaerat dolor earum culpa, et quod fugiat, quisquam minus! Architecto!
+                .row
+                  .columns
+                    button.tiny.radius.left Login
+                    button.tiny.radius.right Register
+
+    include _scripts.jade
+    //- handlebar templates
+    script#option-tpl(type="text/x-handlebars-template").
+      <option value="" disabled selected>Select your option</option>
+      {{#if options}}
+      {{#each options}}
+      <option data-index="{{@index}}" value="{{name}}">{{name}}</option>
+      {{/each}}
+      {{else}}
+      <option value="">&nbsp;</option>
+      {{/if}}
+
+    script#results-tpl(type="text/x-handlebars-template").
+      {{#if data}}
+      <p class="parts-name">{{data.name}}</p>
+      <table class="results-table">
+        <caption>Click on a part to view more information</caption>
+        <tr>
+          <th>Part Number<br/>with Thru Coolant</th>
+          <th>Part Number<br/>with AD/B Coolant</th>
+          <th>B</th>
+          <th>C</th>
+          <th>Socket Depth</th>
+          <th>Collet Nut (incl.)</th>
+          <th>Nut Torque</th>
+          <th>B/u Screw Left Hand</th>
+        </tr>
+
+        <tr>
+          {{#if data.part_number_with_thru_coolant}}
+          <td class="alt">{{data.part_number_with_thru_coolant}}</td>
+          {{else}} <td class="alt">&mdash;</td>
+          {{/if}}
+
+          {{#if data.part_number_with_ADB_coolant}}
+          <td>{{data.part_number_with_ADB_coolant}}</td>
+          {{else}} <td>&mdash;</td>
+          {{/if}}
+
+          {{#if data.B}}
+          <td class="alt">{{data.B}}</td>
+          {{else}} <td class="alt">&mdash;</td>
+          {{/if}}
+
+          {{#if data.C}}
+          <td>{{data.C}}</td>
+          {{else}} <td>&mdash;</td>
+          {{/if}}
+
+          {{#if data.socket_depth}}
+          <td class="alt">{{data.socket_depth}}</td>
+          {{else}} <td class="alt">&mdash;</td>
+          {{/if}}
+
+          {{#if data.collet_nut}}
+          <td>{{data.collet_nut}}</td>
+          {{else}} <td>&mdash;</td>
+          {{/if}}
+
+          {{#if data.nut_torque}}
+          <td class="alt">{{data.nut_torque}}</td>
+          {{else}} <td class="alt">&mdash;</td>
+          {{/if}}
+
+          {{#if data.BU_screw_left_hand}}
+          <td>{{data.BU_screw_left_hand}}</td>
+          {{else}} <td>&mdash;</td>
+          {{/if}}
+
+        </tr>
+      </table>
+      {{/if}}

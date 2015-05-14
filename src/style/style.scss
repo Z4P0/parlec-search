@@ -1,0 +1,113 @@
+@import "vars";
+@import "mixins";
+// 3rd party
+@import "vendor/normalize";
+@import "vendor/print";
+@import "vendor/classes";
+@import "vendor/normalize";
+@import "vendor/foundation";
+// custom
+@import "theme/base";
+@import "theme/typography";
+
+.off-white-bg   { background-color: $off-white; }
+.off-white      { color:            $off-white; }
+.black-bg       { background-color: $black; }
+.black          { color:            $black; }
+.grey-bg        { background-color: $grey; }
+.grey           { color:            $grey; }
+.red-bg         { background-color: $red; }
+.red            { color:            $red; }
+
+
+
+
+
+
+.container {
+    height: 100%;
+}
+
+
+.header {
+    background-color: $black;
+    color: $white;
+    backface-visibility: hidden;
+    width: 100%;
+    @include mq(netbook) {
+        position: fixed;
+        top: 0;
+        z-index: 100;
+    }
+}
+
+    .h1 {
+        font-size: 1rem;
+        margin: 0;
+        color: $white;
+        a {
+            color: inherit;
+        }
+        @include mq(netbook) {
+            line-height: rem-calc(45);
+        }
+    }
+
+    .login-btn {
+        @include button(
+            $padding:       $button-sml,
+            $bg:            $button-bg-color,
+            $radius:        false,
+            $full-width:    false,
+            $disabled:      false,
+            $is-prefix:     false,
+            $bg-hover:      null,
+            $border-color:  null,
+            $transition:    true
+        );
+        font-weight: bold;
+        margin-bottom: 0;
+        border-left: 1px solid $white;
+    }
+
+
+
+
+.main {
+    height: 100%;
+    > div {
+        height: 100%;
+    }
+}
+
+    %region {
+        @include mq(netbook) {
+            height: 100%;
+        }
+    }
+
+    .left-sidebar {
+        @extend %region;
+        border-right: 1px solid $black;
+    }
+
+        .filters-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+    .right-side-content {
+        @extend %region;
+
+    }
+
+
+
+.padding {
+    padding-top: $column-gutter * 2;
+    padding-bottom: $column-gutter * 2;
+    @include mq(netbook) {
+        padding-top: ($column-gutter * 2) + rem-calc(45);
+        padding-bottom: ($column-gutter * 2) + rem-calc(45);
+    }
+}
