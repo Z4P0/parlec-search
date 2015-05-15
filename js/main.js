@@ -368,7 +368,7 @@
 
             // TEMPORARY HACK - add a default image
             if (product.image === undefined) {
-                product.image = '/images/product-image-1.jpg';
+                product.image = 'images/product-image-1.jpg';
             }
 
 
