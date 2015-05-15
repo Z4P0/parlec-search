@@ -96,7 +96,7 @@
 
             product_families: {
                 'Toolholding': {
-                    json_url: '/data/parlec-toolholding.json'
+                    json_url: 'data/parlec-toolholding.json'
                 }
             }
 
