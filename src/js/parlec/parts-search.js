@@ -36,7 +36,11 @@
 
         },
 
-        data: {},  // will hold our own malleable copy of data
+        config: {},  // will hold our search settings: product_solution, system, taper type
+
+        data: {},  // will hold our own malleable copy of data - maybe
+
+        results: {},  // will hold our final products after searching
 
         setup_incomplete: true,
 
@@ -79,6 +83,10 @@
                     })
                 }
 
+                // update our local data object
+                self.data = parlec.DATA[self.name];
+
+
                 if (self.setup_incomplete) {
                     self.complete_initial_setup();  // sets setup_incomplete = false
                 }
@@ -97,50 +105,129 @@
         },
 
 
+        render_next_options: function (settings) {
+
+            // load up that data point
+            var data_point = this.data.products[this.config.product_solution.index].products;
+
+            // read the config object and render the results
+            // ----------------------------------------
+
+            var results = [];
+
+            if (
+                this.config.system !== undefined ||
+                this.config.taper_type !== undefined ||
+                this.config.part_number !== undefined
+            ) {
+                for (var i = 0; i < data_point.length; i++) {
+                    // for every product, check if it matches our current config
+                    var product = data_point[i];
+                    var system_match        = true;
+                    var taper_type_match    = true;
+                    var part_number_match   = true;
+
+                    // check system
+                    if (this.config.system !== undefined) {
+                        if (product['SYSTEM'] !== this.config.system.name) {
+                            system_match = false;
+                        }
+                    }
+                    // check taper type
+                    if (this.config.taper_type !== undefined) {
+                        if (product['TAPER TYPE'] !== this.config.taper_type.name) {
+                            taper_type_match = false;
+                        }
+                    }
+
+                    // check part number
+                    if (this.config.part_number !== undefined) {
+                        if (product['PART NUMBER'] !== this.config.part_number.name) {
+                            part_number_match = false;
+                        }
+                    }
+
+                    if (system_match && taper_type_match && part_number_match) {
+                        results.push(product);
+                    }
+                }
+
+
+            } else {
+                results = data_point;
+            }
+
+
+            // filter duplicates
+            // ----------------------------------------
+            var filtered_results = [];
+            for (var j = 0; j < results.length; j++) {
+
+                if (filtered_results.length) {
+                    var already_exists = false;
+
+                    for (var k = 0; k < filtered_results.length; k++) {
+                        if (filtered_results[k].name === results[j][settings.field]) {
+                            already_exists = true;
+                        }
+                    }
+                    if (!already_exists) {
+                        filtered_results.push({
+                            name: results[j][settings.field],
+                            product: results[j]
+                        });
+                    }
+                } else {
+                    filtered_results.push({
+                        name: results[j][settings.field],
+                        product: results[j]
+                    });
+                }
+
+            }
+
+
+            var $target = $(settings.target);
+
+            if (filtered_results.length) {
+                // render the options
+                parlec.utils.render_template({
+                    target: settings.target,
+                    template: '#option-tpl',
+                    context: {
+                        options: filtered_results
+                    }
+                });
+
+                this.results = filtered_results;
+                // removed "disabled" attribute
+                if ($target.attr('disabled')) {$target.attr('disabled', false); }
+            } else {
+                alert('Sorry! No results found. Try modifying your search.');
+                $target.attr('disabled', true);
+            }
+
+        },
+
+
         add_event_listeners: function () {
 
             var self = this;
 
             // a) select boxes
+            // ----------------------------------------
+            //      update config object
+            //      render new options
             $('#product-solution').on('change', function (event) {
-                var $selected_option = $(event.target).find('option:selected');
 
-                // "activate" the next box
-                $('#system').attr('disabled', false);
-
-                // load up that data point
-                var data_point = parlec.DATA[self.name].products[$selected_option.data('index')].products;
-                var systems = [];
-                for (var i = 0; i < data_point.length; i++) {
-                    if (systems.length) {
-                        var already_exists = false;
-                        for (var j = 0; j < systems.length; j++) {
-                            if (systems[j].name === data_point[i]['SYSTEM']) {
-                                already_exists = true;
-                            }
-                        }
-                        if (!already_exists) {
-                            systems.push({
-                                name: data_point[i]['SYSTEM']
-                            });
-                        }
-                    } else {
-                        systems.push({
-                            name: data_point[i]['SYSTEM']
-                        });
-                    }
+                var $option = $(event.target).find('option:selected');
+                self.config.product_solution = {
+                    name: $option.val(),
+                    index: $option.data('index')
                 }
-
-                console.log('looped through data. these are the systems available:');
-                console.log(systems);
-
-                // render the options
-                parlec.utils.render_template({
+                self.render_next_options({
                     target: '#system',
-                    template: '#option-tpl',
-                    context: {
-                        options: systems
-                    }
+                    field: 'SYSTEM'
                 });
 
             });
@@ -148,24 +235,45 @@
 
 
             $('#system').on('change', function (event) {
-                var $selected_option = $(event.target).find('option:selected');
-                console.log($selected_option.data('index'));
-                $('#taper-type').attr('disabled', false);
+
+                var $option = $(event.target).find('option:selected');
+                self.config.system = {
+                    name: $option.val(),
+                    index: $option.data('index')
+                }
+                // console.log(self.config.system);
+                self.render_next_options({
+                    target: '#taper-type',
+                    field: 'TAPER TYPE'
+                });
+
             });
 
 
 
             $('#taper-type').on('change', function (event) {
-                var $selected_option = $(event.target).find('option:selected');
-                console.log($selected_option.data('index'));
+
+                var $option = $(event.target).find('option:selected');
+                self.config.taper_type = {
+                    name: $option.val(),
+                    index: $option.data('index')
+                }
+                self.render_next_options({
+                    target: '#part-number-select',
+                    field: 'PART NUMBER'
+                });
+
             });
 
 
 
 
             $('#part-number-select').on('change', function (event) {
-                var $selected_option = $(event.target).find('option:selected');
-                console.log($selected_option.data('index'));
+                // var $selected_option = $(event.target).find('option:selected');
+                var $option = $(event.target).find('option:selected');
+                console.log($option.data('index'));
+                // console.log('render product');
+                console.log(self.results[$option.data('index')]);
             });
 
 
@@ -173,8 +281,8 @@
 
 
             // b) text input
+            // ----------------------------------------
             var $part_number_input = $('#part-number');
-            var self = this;
 
             $part_number_input.on('keyup', function (event) {
 
@@ -188,8 +296,13 @@
         },
 
 
-
-
+        render_product_table: function () {
+            parlec.utils.render_template({
+                template: '#results-tpl',
+                target: '#results',
+                context: {data: this.current.data_point}
+            });
+        },
 
 
 
@@ -348,250 +461,3 @@
 
 
 }(window, window.document));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-parlec_product_search = {
-  data: undefined,
-  current: {
-    data_point: undefined,
-    select_boxes: [],
-    select_box_index: 0,
-    history: []
-  },
-
-  init: function (data) {
-
-    // set the data parameter to our object, update our data_point object
-    // data_point is our position in the data set
-    // ----------------------------------------
-    this.data = data;
-    this.current.data_point = this.data;
-
-
-    // setup event listener for onchange or something, add them to all
-    // ----------------------------------------
-    $('.select-box').each(function (index, element) {
-      // add the index of the array, and onchange listener
-      $(element).attr('data-select-index', index)
-        .on('change', function (event) {
-          parlec.product_search.update(event);
-        });
-      // if this is the first box, it is the 'root'
-      // we reset search if we're messing with the root
-      if (index === 0) $(element).attr('data-root', true);
-
-      // push element to our array
-      parlec.product_search.current.select_boxes.push(element);
-    });
-
-
-    // render the first box
-    // ----------------------------------------
-    parlec.utils.render_template({
-      template: '#option-tpl',
-      target: this.current.select_boxes[this.current.select_box_index],
-      context: {options: this.current.data_point.products }
-    });
-    console.log(this.current.data_point, this.current.select_box_index);
-    console.log('============================================');
-
-
-    // ----------------------------------------
-    // update() handles most of the things from here on out
-    // ----------------------------------------
-
-  },
-
-  update: function (event) {
-
-    /**
-     * this function updates our data_point and selectbox references
-     * and then calls render() to show the latest data
-     */
-
-    // hard reset if we interact with the first box
-    if (event.target.getAttribute('data-root')) this.reset_search();
-
-    // get data about the selection the user just made
-    var select_box_index = parseInt(event.target.getAttribute('data-select-index'), 10),
-        index = parseInt(event.target.selectedOptions[0].getAttribute('data-index'), 10);
-
-
-    // we update our data_point and select_box references
-    // ----------------------------------------
-    if (select_box_index === this.current.select_box_index) {
-      // we clicked on the last selectbox, so we are progressing through the data
-      // move to our new data point, and select_box reference
-      this.current.data_point = this.current.data_point.products[index];
-      this.current.select_box_index++;
-      // add index choice to our history
-      this.current.history.push(index);
-    } else if (select_box_index < this.current.select_box_index) {
-      // we clicked on a previous box, so we want to go back from where we came
-      // we have to re-navigate the data to get to a previous point, for this
-      // reason we have temporary (tmp_) variables
-      var layer_difference = this.current.select_box_index - select_box_index,
-          tmp_data_point = this.data,
-          tmp_history = [];
-
-      // move to our new data point, and select_box reference
-      // we go through the history array (which has all our previous choices)
-      // until we get to the level of data required
-      for (var i = 0; i < this.current.history.length - layer_difference; i++) {
-        tmp_data_point = tmp_data_point.products[this.current.history[i]];
-        tmp_history.push(this.current.history[i]);
-      }
-      // add our latest choice to our new history
-      tmp_history.push(index);
-      // finally.. update our data_point and history
-      this.current.data_point = tmp_data_point.products[index];
-      this.current.history = tmp_history;
-
-      // update our select_box_index
-      this.current.select_box_index = select_box_index + 1;
-      // this doesn't mke sense initially, i should probably take another look
-
-    }
-
-    console.log(this.current.data_point, this.current.select_box_index);
-
-    // render the things, either the next box or results table
-    // ----------------------------------------
-    this.render();
-  },
-
-
-  render: function () {
-    // we reset HTML classes
-    this.reset_classes();
-
-    // add class ".active" to the active selectbox, remove "disabled" attribute
-    $(this.current.select_boxes[this.current.select_box_index]).addClass('active').prop('disabled', false);
-
-    // then render the next selectbox or a table
-    this.render_selectbox();
-
-    // if (this.current.data_point.products) this.render_selectbox();
-    // else this.render_table();
-  },
-
-
-  reset_classes: function () {
-
-    // make sure all the other boxes are reset
-    // we start the loop at the current.select_box_index
-    // lowest start point is 1 because 0 (this first box) will always be active
-    var i = (this.current.select_box_index > 1) ? this.current.select_boxes[i] : 1;
-
-    for (i; i < this.current.select_boxes.length; i++) {
-      // remove class of "active", disabled = true
-      $(this.current.select_boxes[i]).removeClass('active').prop('disabled', true);
-
-      // clear the existing <options>
-      parlec.utils.render_template({
-        template: '#option-tpl',
-        target: this.current.select_boxes[i],
-        context: {options: undefined}
-      });
-    }
-
-  },
-
-
-  render_selectbox: function (options, target) {
-    /**
-     * this function takes a JSON object and outputs some HTML
-     * the parameters are completely optional, by default it will use data from
-     * the "current" object
-     *
-     * params:
-     * options  |  JSON object
-     * target   |  the <select> element we will populate
-     */
-
-
-    // render the products array in the next box
-    parlec.utils.render_template({
-      template: '#option-tpl',
-      target: this.current.select_boxes[this.current.select_box_index],
-      context: {options: this.current.data_point.products}
-    });
-
-
-  },
-
-
-  render_table: function () {
-    parlec.utils.render_template({
-      template: '#results-tpl',
-      target: '#results',
-      context: {data: this.current.data_point}
-    });
-  },
-
-
-  reset_search: function () {
-    this.current.data_point = this.data;
-    this.current.select_box_index = 0;
-    this.current.history = [];
-  }
-
-}
