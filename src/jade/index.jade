@@ -9,6 +9,7 @@ html(lang="en").no-js
 
   body#parts-search
     a(href="#main").visuallyhidden Skip to main content
+    .container
       header.header
         .row
           .columns.small-5
@@ -76,8 +77,8 @@ html(lang="en").no-js
                       button.tiny.radius.left Login
                       button.tiny.radius.right Register
 
-            //- sample markup
-            .product-screen
+            //- //- sample markup
+            //- .product-screen
               .row
                 .columns.small-centered.small-12.medium-10
                   h2.product-title B40-11ERF400
@@ -138,6 +139,12 @@ html(lang="en").no-js
                           a(href="#").button.tiny Download
                         li
                           a(href="#").button.tiny Email Link
+
+    .joyride-container
+      ol.joyride-list(data-joyride)
+        li(data-id="product-solution", data-button="Okay", data-options="tip_location: right; prev_button: false")
+          p Start here!
+
 
     include _scripts.jade
     //- handlebar templates

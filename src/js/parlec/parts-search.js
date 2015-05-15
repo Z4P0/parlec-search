@@ -371,11 +371,13 @@
             this.add_event_listeners();
 
 
-            // we until we have data to enable everything
+            // wait until we have data to enable everything
             if (parlec.DATA[this.name].products.length) {
                 this.complete_initial_setup();
             }
 
+            // 3 - setup joyride
+            $(document).foundation('joyride', 'start');
         },
 
 
