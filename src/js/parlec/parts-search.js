@@ -270,10 +270,10 @@
 
             $('#part-number-select').on('change', function (event) {
                 // var $selected_option = $(event.target).find('option:selected');
-                var $option = $(event.target).find('option:selected');
-                console.log($option.data('index'));
-                // console.log('render product');
-                console.log(self.results[$option.data('index')]);
+
+                var option = $(event.target).find('option:selected').data('index');
+
+                self.render_product(self.results[option].product);
             });
 
 
@@ -296,12 +296,40 @@
         },
 
 
-        render_product_table: function () {
+
+
+        render_product: function (product) {
+
+            // TEMPORARY HACK - add a default image
+            if (product.image === undefined) {
+                product.image = '/images/product-image-1.jpg';
+            }
+
+
+            // we have to sanitize the data a bit.
+            // the object has spacees that we underscore:
+            // "TAPER TYPE" --> taper_type
+            // without this, Handlebars cannot render properly
+            //      should we be doing this earlier? like when we first load
+            //      up the data?. we'd probably have to update some code to
+            //      handle the new structure
+
+            var underscored_product = {};
+            for(var field in product) {
+                underscored_product[s.underscored(field)] = product[field];
+            }
+
+
             parlec.utils.render_template({
-                template: '#results-tpl',
                 target: '#results',
-                context: {data: this.current.data_point}
+                template: '#results-tpl',
+                context: {
+                    data: underscored_product
+                }
             });
+
+            $(document).foundation('tab', 'reflow');
+
         },
 
 
